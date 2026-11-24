@@ -1,0 +1,758 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div style="margin-bottom: 2rem; padding: 0 12px; display: flex; align-items: center; gap: 16px;">
+            <div
+                style="width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; box-shadow: var(--shadow-sm);">
+                {{ user.full_name[0] }}
+            </div>
+            <div>
+                <h4 style="text-align: left; font-size: 1rem; font-weight: 800; margin: 0; color: var(--text-main);">{{
+                    user.full_name }}</h4>
+                <div
+                    style="text-align: left; opacity: 0.8; font-size: 0.75rem; font-weight: 600; color: var(--secondary);">
+                    <i class="fas fa-check-circle"></i> Verified User
+                </div>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'overview')" class="sidebar-link active"><i
+                        class="fas fa-home"></i> Dashboard</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showModal('bookModal')" class="sidebar-link"><i
+                        class="fas fa-plus-circle"></i> Book Service</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'saved-workers')" class="sidebar-link"><i
+                        class="fas fa-heart"></i> Saved Workers</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'payments')" class="sidebar-link"><i
+                        class="fas fa-wallet"></i> Payments</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('view_complaints') }}" class="sidebar-link"><i
+                        class="fas fa-exclamation-circle"></i> My Complaints</a>
+            </li>
+            <li style="margin-top: 2rem;">
+                <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: var(--danger);"><i
+                        class="fas fa-sign-out-alt"></i> Sign Out</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div id="overview" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+                <div>
+                    <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -1px;">Welcome back, {{
+                        user.full_name.split()[0] }}!</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem;">Manage your home service requests and
+                        history.
+                    </p>
+                </div>
+                <button class="btn btn-primary" onclick="showModal('bookModal')"
+                    style="padding: 14px 28px; border-radius: 14px;">
+                    <i class="fas fa-plus"></i> New Request
+                </button>
+            </div>
+
+            <div class="table-wrapper animate-up delay-1">
+                <div
+                    style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.1rem; font-weight: 800;">Recent Appointments</h3>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        Showing {{ requests|length }} total requests
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service Category</th>
+                            <th>Expert Assigned</th>
+                            <th>Schedule</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Portfolio & Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div
+                                        style="width: 40px; height: 40px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                        <i class="fas fa-toolbox"></i>
+                                    </div>
+                                    <div style="font-weight: 700;">{{ req.service_name }}</div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if req.worker_name %}
+                                <div style="font-weight: 600;">{{ req.worker_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Rating: <span
+                                        style="color: #f59e0b;"><i class="fas fa-star"></i> {{
+                                        "%.1f"|format(req.rating_avg|float) }}</span></div>
+                                {% else %}
+                                <div style="color: var(--text-muted); font-style: italic;">Awaiting Expert...</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">{{ req.request_date }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ req.time_slot }}</div>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ req.status.lower().replace(' ', '') }}">{{ req.status
+                                    }}</span>
+                                {% if req.status == 'On the way' %}
+                                <div style="margin-top: 10px; width: 140px;">
+                                    <div
+                                        style="font-size: 0.7rem; display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 700;">
+                                        <span>LIVE ETA</span>
+                                        <span style="color: var(--primary);">{{ req.eta.strftime('%H:%M') if req.eta
+                                            else
+                                            '--:--' }}</span>
+                                    </div>
+                                    <div
+                                        style="height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; position: relative;">
+                                        <div class="eta-pulse"
+                                            style="height: 100%; background: var(--primary); width: 65%;"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                    {% if req.status == 'Completed' %}
+                                    <button class="btn btn-outline"
+                                        style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px;"
+                                        onclick="openFeedbackModal('{{ req.id }}')">
+                                        <i class="fas fa-comment"></i> Review
+                                    </button>
+                                    {% endif %}
+
+                                    {% if req.worker_name %}
+                                    <button class="btn btn-outline worker-portfolio-btn"
+                                        style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px;"
+                                        data-name="{{ req.worker_name }}" data-rating="{{ req.rating_avg }}"
+                                        data-jobs="{{ req.jobs_completed }}" data-bio="{{ req.worker_bio }}"
+                                        data-phone="{{ req.worker_phone }}" data-id="{{ req.worker_id }}"
+                                        data-favorite="{{ 'true' if req.is_favorite else 'false' }}">
+                                        <i class="fas fa-user-tie"></i> Profile
+                                    </button>
+                                    {% endif %}
+
+                                    {% if req.status == 'Assigned' and not req.presence_confirmed %}
+                                    <button class="btn btn-primary"
+                                        style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px;"
+                                        onclick="openPresenceModal('{{ req.id }}')">
+                                        <i class="fas fa-check"></i> Confirm
+                                    </button>
+                                    {% endif %}
+
+                                    {% if req.status in ['Requested', 'Assigned'] %}
+                                    <button class="btn btn-outline"
+                                        style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; color: var(--danger); border-color: var(--danger);"
+                                        onclick="openCancelModal('{{ req.id }}')">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                    {% endif %}
+
+                                    {% if req.status == 'Completed' %}
+                                    <form action="{{ url_for('repeat_booking') }}" method="POST"
+                                        style="display:inline;">
+                                        <input type="hidden" name="request_id" value="{{ req.id }}">
+                                        <button type="submit" class="btn btn-primary"
+                                            style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; background: var(--secondary);">
+                                            <i class="fas fa-redo"></i> Rebook
+                                        </button>
+                                    </form>
+                                    <button class="btn btn-outline"
+                                        style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; color: var(--danger); border-color: var(--danger);"
+                                        onclick="openComplaintModal('{{ req.id }}')">
+                                        <i class="fas fa-exclamation-triangle"></i> Issue
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: 100px; text-align: center;">
+                                <div
+                                    style="width: 80px; height: 80px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2rem; color: #cbd5e1;">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <h3 style="color: #64748b;">No bookings found</h3>
+                                <button class="btn btn-primary" style="margin-top: 1rem;"
+                                    onclick="showModal('bookModal')">Book Your First Service</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="saved-workers" class="section" style="display: none;">
+            <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem;">Your Favorite Experts</h2>
+            <div class="grid-3 animate-up delay-1">
+                {% for req in requests if req.is_favorite %}
+                <div class="glass-card">
+                    <h3>{{ req.worker_name }}</h3>
+                    <p>{{ req.service_name }} Specialist</p>
+                    <button class="btn btn-primary worker-portfolio-btn" data-name="{{ req.worker_name }}"
+                        data-rating="{{ req.rating_avg }}" data-jobs="{{ req.jobs_completed }}"
+                        data-bio="{{ req.worker_bio }}" data-phone="{{ req.worker_phone }}"
+                        data-id="{{ req.worker_id }}" data-favorite="true">View Profile</button>
+                </div>
+                {% else %}
+                <div
+                    style="grid-column: 1 / -1; padding: 60px; text-align: center; background: white; border-radius: 20px;">
+                    <i class="fas fa-heart" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+                    <h3>No saved stars yet</h3>
+                    <p>Mark workers you liked as favorites to see them here.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="payments" class="section" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem; font-weight: 900; letter-spacing: -1px;">Wallet & Payments</h2>
+                <div
+                    style="background: #f8fafc; padding: 10px 20px; border-radius: 12px; font-weight: 800; border: 1px solid #e2e8f0;">
+                    <span style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase;">Total
+                        Spent:</span>
+                    <span style="color: var(--primary); margin-left: 8px;">₹{{
+                        "%.2f"|format(requests|selectattr('payment_status', 'equalto',
+                        'Paid')|sum(attribute='total_amount')) }}</span>
+                </div>
+            </div>
+
+            {% if pending_payments %}
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--danger);">
+                <i class="fas fa-exclamation-circle"></i> Payments Due
+            </h3>
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 4rem;">
+                {% for p in pending_payments %}
+                <div class="glass-card animate-up delay-1"
+                    style="border-left: 5px solid var(--danger); padding: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 1.1rem;">{{ p.service_name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Done by {{ p.worker_name }} on {{
+                                p.request_date }}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-main);">₹{{
+                                p.total_amount }}</div>
+                        </div>
+                    </div>
+                    <div
+                        style="background: #fff8f8; padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>Base Service Fee</span>
+                            <span>₹{{ p.service_fee }}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                            <span>Extra Charges (Parts/Material)</span>
+                            <span>₹{{ p.extra_charges }}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; padding: 12px; border-radius: 10px;"
+                        onclick="openPaymentModal('{{ p.id }}', '{{ p.total_amount }}', '{{ p.service_name }}')">
+                        <i class="fas fa-credit-card"></i> Process Payment
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem;">Transaction History</h3>
+            <div class="table-wrapper animate-up delay-2">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Expert</th>
+                            <th>Total Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests if r.payment_status == 'Paid' %}
+                        <tr>
+                            <td><strong>{{ r.service_name }}</strong></td>
+                            <td>{{ r.worker_name }}</td>
+                            <td style="font-weight: 800;">₹{{ r.total_amount }}</td>
+                            <td><i class="fas fa-university" style="color: #94a3b8;"></i> Online Transfer</td>
+                            <td><span class="badge" style="background: #f0fdf4; color: #15803d;"><i
+                                        class="fas fa-check"></i> Paid</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: 40px; text-align: center; color: var(--text-muted);">No
+                                payment history found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+    .section {
+        animation: fadeIn 0.4s ease-out;
+    }
+</style>
+
+<!-- Modal Overlays Style Fixes -->
+<style>
+    .modal-content {
+        border-radius: 20px;
+        box-shadow: var(--shadow-xl);
+        border: none;
+    }
+</style>
+
+<!-- Book Service Modal -->
+<div id="bookModal" class="modal">
+    <div class="modal-content animate-up" style="border-radius: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Book a Pro Service</h3>
+            <button onclick="closeModal('bookModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('book_service') }}" method="POST">
+            <div class="form-group">
+                <label>Service Category</label>
+                <select name="service_id" class="form-control" required>
+                    <option value="">Choose a Service...</option>
+                    {% for s in services %}
+                    <option value="{{ s.id }}">{{ s.name }} (Base: ₹{{ s.base_price }})</option>
+                    {% endfor %}
+                </select>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">
+                    <i class="fas fa-info-circle"></i> A platform processing fee of ₹49 will be added to the final
+                    invoice.
+                </p>
+            </div>
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>District</label>
+                    <select name="city_id" class="form-control" required onchange="loadAreasBooking(this.value)">
+                        <option value="">Select</option>
+                        {% for c in cities %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Local Area</label>
+                    <select name="area_id" id="areaSelectBooking" class="form-control" required>
+                        <option value="">Select</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Service Date</label>
+                    <input type="date" name="date" class="form-control" required min="{{ current_date }}">
+                </div>
+                <div class="form-group">
+                    <label>Available Slot</label>
+                    <select name="time_slot" class="form-control" required>
+                        <option value="09:00 AM - 12:00 PM">Morning (9am-12pm)</option>
+                        <option value="12:00 PM - 03:00 PM">Afternoon (12pm-3pm)</option>
+                        <option value="03:00 PM - 06:00 PM">Evening (3pm-6pm)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Job Description & Notes</label>
+                <textarea name="description" class="form-control" rows="3"
+                    placeholder="Explain the problem in detail..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; margin-top: 1rem; border-radius: 12px; font-size: 1.1rem;">Submit
+                Request</button>
+        </form>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div id="feedbackModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Rate Your Professional</h3>
+            <button onclick="closeModal('feedbackModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('submit_feedback') }}" method="POST">
+            <input type="hidden" name="request_id" id="feedbackRequestId">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 700;">Overall Experience</label>
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    {% for i in range(1, 6) %}
+                    <label style="flex: 1; text-align: center; cursor: pointer;">
+                        <input type="radio" name="rating" value="{{ i }}" required style="display: none;">
+                        <div class="rating-box"
+                            style="padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-weight: 800;">{{
+                            i }} ★</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="font-weight: 700; margin-bottom: 8px; display: block;">Your Comments</label>
+                <textarea name="comment" class="form-control" rows="4" required
+                    placeholder="Tell us what you liked or how we can improve..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">Post
+                Review</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .rating-box:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    input[type="radio"]:checked+.rating-box {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+</style>
+<!-- Worker Portfolio Modal -->
+<div id="workerModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="workerInitial"
+                    style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--secondary), #059669); color: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">
+                    W</div>
+                <div>
+                    <h3 id="workerName" style="margin: 0; font-weight: 800;">Worker Name</h3>
+                    <div id="workerRating" style="color: #f59e0b; font-size: 0.9rem;"></div>
+                </div>
+            </div>
+            <button onclick="toggleFavorite()" id="favBtn"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #cbd5e1;">
+                <i class="fas fa-star"></i>
+            </button>
+        </div>
+
+        <div style="background: #f8fafc; padding: 20px; border-radius: 16px; margin-bottom: 2rem;">
+            <p id="workerBio" style="margin-bottom: 15px; font-size: 0.95rem; line-height: 1.6; color: #475569;"></p>
+            <div style="display: flex; gap: 24px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                <div>
+                    <small
+                        style="color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase; font-size: 0.7rem;">Jobs
+                        Done</small>
+                    <strong id="workerJobs" style="font-size: 1.1rem;">0</strong>
+                </div>
+                <div>
+                    <small
+                        style="color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase; font-size: 0.7rem;">Status</small>
+                    <strong style="color: #10b981; font-size: 1.1rem;">Verified</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+            <a id="workerCall" href="#" class="btn btn-primary" style="flex: 1; border-radius: 12px;">
+                <i class="fas fa-phone"></i> Contact Expert
+            </a>
+            <button onclick="closeModal('workerModal')" class="btn btn-outline"
+                style="flex: 1; border-radius: 12px;">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Request Modal -->
+<div id="cancelModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Cancel Service</h3>
+            <button onclick="closeModal('cancelModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('cancel_request') }}" method="POST">
+            <input type="hidden" name="request_id" id="cancelRequestId">
+            <div class="form-group">
+                <label>Reason for Cancellation</label>
+                <select name="reason" class="form-control" required>
+                    <option value="Customer unavailable">Customer unavailable</option>
+                    <option value="Worker unavailable">Worker unavailable</option>
+                    <option value="Wrong service booked">Wrong service booked</option>
+                    <option value="Emergency resolved">Emergency resolved</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-danger"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">Confirm
+                Cancellation</button>
+        </form>
+    </div>
+</div>
+
+<!-- Confirm Presence Modal -->
+<div id="presenceModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Confirm Availability</h3>
+            <button onclick="closeModal('presenceModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Are you available at the scheduled time? This helps
+            our expert reach you on time.</p>
+        <form action="{{ url_for('confirm_presence') }}" method="POST">
+            <input type="hidden" name="request_id" id="presenceRequestId">
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" name="confirmation" value="Yes" class="btn btn-primary"
+                    style="flex:1; padding: 16px; border-radius: 12px;">Yes, I'm here</button>
+                <button type="submit" name="confirmation" value="Reschedule" class="btn btn-outline"
+                    style="flex:1; padding: 16px; border-radius: 12px;">Reschedule</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Raise Complaint Modal -->
+<div id="complaintModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Report an Issue</h3>
+            <button onclick="closeModal('complaintModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('raise_complaint') }}" method="POST">
+            <input type="hidden" name="request_id" id="complaintRequestId">
+            <div class="form-group">
+                <label>Issue Category</label>
+                <select name="category" class="form-control" required>
+                    <option value="Incomplete work">Incomplete work</option>
+                    <option value="Wrong service">Wrong service</option>
+                    <option value="Bad behavior">Bad behavior</option>
+                    <option value="Damage">Damage</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Details</label>
+                <textarea name="description" class="form-control" rows="4" required
+                    placeholder="Describe the issue in detail..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">Submit
+                Report</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentWorkerId = null;
+
+    function showModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    function openFeedbackModal(reqId) {
+        document.getElementById('feedbackRequestId').value = reqId;
+        showModal('feedbackModal');
+    }
+    function openCancelModal(reqId) {
+        document.getElementById('cancelRequestId').value = reqId;
+        showModal('cancelModal');
+    }
+    function openPresenceModal(reqId) {
+        document.getElementById('presenceRequestId').value = reqId;
+        showModal('presenceModal');
+    }
+    function openComplaintModal(reqId) {
+        document.getElementById('complaintRequestId').value = reqId;
+        showModal('complaintModal');
+    }
+
+    function openPaymentModal(reqId, amount, service) {
+        document.getElementById('paymentRequestId').value = reqId;
+        document.getElementById('payAmountDisp').textContent = `₹${amount}`;
+        document.getElementById('payBtnAmount').textContent = amount;
+        document.getElementById('payServiceDisp').textContent = service;
+        showModal('paymentModal');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.worker-portfolio-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const data = btn.dataset;
+                showWorkerPortfolio(data.name, data.rating, data.jobs, data.bio, data.phone, data.id, data.favorite === 'true');
+            });
+        });
+    });
+
+    function showWorkerPortfolio(name, rating, jobs, bio, phone, workerId, isFav) {
+        document.getElementById('workerName').textContent = name;
+        document.getElementById('workerInitial').textContent = name[0];
+        document.getElementById('workerBio').textContent = bio;
+        document.getElementById('workerJobs').textContent = jobs;
+        document.getElementById('workerCall').href = `tel:${phone}`;
+        currentWorkerId = workerId;
+
+        let stars = '';
+        const r = parseFloat(rating) || 0;
+        for (let i = 1; i <= 5; i++) {
+            stars += `<i class="${i <= r ? 'fas' : 'far'} fa-star"></i>`;
+        }
+        document.getElementById('workerRating').innerHTML = `${stars} (${r.toFixed(1)})`;
+
+        const favBtn = document.getElementById('favBtn');
+        if (isFav) favBtn.classList.add('fav-active');
+        else favBtn.classList.remove('fav-active');
+
+        showModal('workerModal');
+    }
+
+    async function toggleFavorite() {
+        if (!currentWorkerId) return;
+        const response = await fetch('/toggle_favorite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `worker_id=${currentWorkerId}`
+        });
+        const data = await response.json();
+        const favBtn = document.getElementById('favBtn');
+        if (data.status === 'added') favBtn.classList.add('fav-active');
+        else favBtn.classList.remove('fav-active');
+    }
+
+    function showSection(element, sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+        // Show selected section
+        const target = document.getElementById(sectionId);
+        if (target) {
+            target.style.display = 'block';
+        }
+
+        // Update active class on sidebar links
+        document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+        if (element && element.classList && element.classList.contains('sidebar-link')) {
+            element.classList.add('active');
+        } else if (element && element.closest) {
+            const link = element.closest('.sidebar-link');
+            if (link) link.classList.add('active');
+        }
+    }
+
+    async function loadAreasBooking(cityId) {
+        const response = await fetch(`/get_areas/${cityId}`);
+        const areas = await response.json();
+        const areaSelect = document.getElementById('areaSelectBooking');
+        areaSelect.innerHTML = '<option value="">Select Area</option>';
+        areas.forEach(area => {
+            const opt = document.createElement('option');
+            opt.value = area.id;
+            opt.textContent = area.name;
+            areaSelect.appendChild(opt);
+        });
+    }
+</script>
+<!-- Payment Modal -->
+<div id="paymentModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Secure Checkout</h3>
+            <button onclick="closeModal('paymentModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">TOTAL AMOUNT DUE</div>
+            <div id="payAmountDisp" style="font-size: 2.5rem; font-weight: 900; color: var(--primary);">₹0.00</div>
+            <div id="payServiceDisp" style="font-weight: 700; color: var(--text-main); margin-top: 5px;">Service Name
+            </div>
+        </div>
+
+        <form action="{{ url_for('process_payment') }}" method="POST">
+            <input type="hidden" name="request_id" id="paymentRequestId">
+
+            <div class="form-group">
+                <label>Select Payment Method</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <label style="cursor: pointer;">
+                        <input type="radio" name="method" value="card" checked style="display: none;">
+                        <div class="payment-method-box">
+                            <i class="fas fa-credit-card"></i> Card
+                        </div>
+                    </label>
+                    <label style="cursor: pointer;">
+                        <input type="radio" name="method" value="upi" style="display: none;">
+                        <div class="payment-method-box">
+                            <i class="fas fa-bolt"></i> UPI
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div id="cardDetails">
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" class="form-control" placeholder="•••• •••• •••• ••••" required maxlength="19">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label>Expiry (MM/YY)</label>
+                        <input type="text" class="form-control" placeholder="MM/YY" required maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="password" class="form-control" placeholder="•••" required maxlength="3">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">
+                <i class="fas fa-lock"></i> Authorize ₹<span id="payBtnAmount">0.00</span>
+            </button>
+        </form>
+        <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 1.5rem;">
+            <i class="fas fa-shield-alt"></i> SSL Encrypted & Secure Payment Gateway
+        </p>
+    </div>
+</div>
+
+<style>
+    .payment-method-box {
+        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        text-align: center;
+        font-weight: 700;
+        transition: all 0.2s;
+    }
+
+    input[type="radio"]:checked+.payment-method-box {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: #f5f3ff;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container animate-in" style="max-width: 1000px; margin: 4rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 900; letter-spacing: -1px;">My Complaints</h1>
+            <p style="color: var(--text-muted);">Track the status of your reported issues</p>
+        </div>
+        <a href="{{ url_for('customer_dashboard') }}" class="btn btn-outline" style="border-radius: 12px;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    {% if complaints %}
+    <div class="grid-1" style="display: grid; gap: 20px;">
+        {% for c in complaints %}
+        <div class="glass-card border-{{ c.status.lower().replace(' ', '') }}"
+            style="padding: 1.5rem; border-left: 5px solid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div>
+                    <span class="badge"
+                        style="background: #f1f5f9; color: var(--text-muted); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">
+                        REF #{{ c.id }}
+                    </span>
+                    <h3 style="margin: 8px 0; font-weight: 800;">{{ c.category }}</h3>
+                </div>
+                <span class="badge badge-{{ c.status.lower().replace(' ', '') }}"
+                    style="font-size: 0.85rem; padding: 6px 14px;">
+                    {{ c.status }}
+                </span>
+            </div>
+
+            <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 1rem;">
+                <p style="margin: 0; color: #475569; font-size: 0.95rem;">{{ c.description }}</p>
+            </div>
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+                <div>
+                    <i class="fas fa-calendar-alt"></i> Reported on {{ c.created_at.strftime('%d %b %Y') }}
+                    <span style="margin: 0 10px;">•</span>
+                    <i class="fas fa-toolbox"></i> Service: {{ c.service_name }} ({{ c.request_date }})
+                </div>
+                {% if c.resolved_at %}
+                <div style="color: var(--secondary); font-weight: 700;">
+                    <i class="fas fa-check-circle"></i> Resolved on {{ c.resolved_at.strftime('%d %b %Y') }}
+                </div>
+                {% endif %}
+            </div>
+
+            {% if c.resolution_notes %}
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed #e2e8f0;">
+                <h4 style="font-size: 0.9rem; font-weight: 800; margin-bottom: 8px; color: var(--primary);">Resolution
+                    Notes:</h4>
+                <p style="margin: 0; font-style: italic; color: #64748b;">"{{ c.resolution_notes }}"</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card" style="padding: 100px; text-align: center;">
+        <div style="font-size: 4rem; color: #e2e8f0; margin-bottom: 1.5rem;">
+            <i class="fas fa-clipboard-check"></i>
+        </div>
+        <h3 style="color: #64748b;">No complaints found</h3>
+        <p>You haven't reported any issues with our services.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

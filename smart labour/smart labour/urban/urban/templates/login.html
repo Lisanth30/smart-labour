@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div
+    style="min-height: calc(100vh - 84px); display: flex; align-items: center; justify-content: center; padding: 2rem; background: radial-gradient(circle at top right, #eef2ff 0%, transparent 40%), radial-gradient(circle at bottom left, #f0f9ff 0%, transparent 40%);">
+    <div class="glass-card animate-up" style="max-width: 480px; width: 100%; padding: 3rem; border-radius: 24px;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div
+                style="width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.5rem;">
+                <i class="fas fa-fingerprint"></i>
+            </div>
+            <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem;">Welcome Back
+            </h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Enter your credentials to access your account.</p>
+        </div>
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="margin-bottom: 12px; display: block;">Select Identity</label>
+                <div class="role-selector-container">
+                    <button type="button" onclick="toggleLoginRole('customer')" id="lgBtnCust"
+                        class="role-toggle active">
+                        Customer
+                    </button>
+                    <button type="button" onclick="toggleLoginRole('worker')" id="lgBtnWork" class="role-toggle">
+                        Expert
+                    </button>
+                    <button type="button" onclick="toggleLoginRole('admin')" id="lgBtnAdmin" class="role-toggle">
+                        Admin
+                    </button>
+                </div>
+                <input type="hidden" name="role" id="loginRoleInput" value="customer">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div style="position: relative;">
+                    <i class="far fa-envelope" style="position: absolute; left: 16px; top: 14px; color: #94a3b8;"></i>
+                    <input type="email" id="email" name="email" class="form-control" required
+                        placeholder="name@example.com" style="padding-left: 48px;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div style="position: relative;">
+                    <i class="fas fa-lock" style="position: absolute; left: 16px; top: 14px; color: #94a3b8;"></i>
+                    <input type="password" id="password" name="password" class="form-control" required
+                        placeholder="••••••••" style="padding-left: 48px;">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary hover-scale"
+                style="width: 100%; padding: 14px; margin-top: 1.5rem; border-radius: 12px; font-size: 1.05rem; box-shadow: var(--shadow-md);">
+                Sign In
+            </button>
+        </form>
+
+        <div style="margin-top: 2.5rem; text-align: center; margin-top: 2rem;">
+            <p style="font-size: 0.95rem; color: var(--text-muted);">
+                New to UrbanService? <a href="{{ url_for('register') }}" style="font-weight: 700;">Create an account</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleLoginRole(role) {
+        document.getElementById('loginRoleInput').value = role;
+
+        // Reset all
+        ['cust', 'work', 'admin'].forEach(t => {
+            document.getElementById(`lgBtn${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.remove('active');
+        });
+
+        // Set active
+        let btnId = 'lgBtnCust';
+        if (role === 'worker') btnId = 'lgBtnWork';
+        if (role === 'admin') btnId = 'lgBtnAdmin';
+
+        document.getElementById(btnId).classList.add('active');
+    }
+</script>
+{% endblock %}

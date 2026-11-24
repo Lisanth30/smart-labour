@@ -1,0 +1,330 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div style="margin-bottom: 3rem; text-align: center;">
+            <div
+                style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--secondary), #059669); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.5rem; box-shadow: var(--shadow-lg);">
+                {{ worker.full_name[0] }}
+            </div>
+            <h4 style="font-size: 1.1rem; font-weight: 800; margin: 0;">{{ worker.full_name }}</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">{{ worker.service_name }}
+                Specialist</p>
+
+            <div style="margin-top: 15px;">
+                <span
+                    class="status-indicator status-{{ 'online' if worker.status != 'Offline' else 'offline' }}"></span>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--secondary);">{{ worker.status }}</span>
+                <form action="{{ url_for('toggle_worker_status') }}" method="POST" style="margin-top: 10px;">
+                    <button type="submit" class="btn btn-outline"
+                        style="padding: 4px 12px; font-size: 0.7rem; border-radius: 8px;">
+                        Set {{ 'Offline' if worker.status != 'Offline' else 'Online' }}
+                    </button>
+                </form>
+            </div>
+
+            <div
+                style="margin-top: 25px; display: flex; justify-content: center; gap: 12px; background: #f8fafc; padding: 12px; border-radius: 12px;">
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; color: #f59e0b; font-size: 1.1rem;"><i class="fas fa-star"></i> {{
+                        "%.1f"|format(worker.rating_avg|float) }}</div>
+                    <div
+                        style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        Rating</div>
+                </div>
+                <div style="border-left: 1px solid #e2e8f0; height: 30px;"></div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">{{ worker.jobs_completed }}
+                    </div>
+                    <div
+                        style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">
+                        Closed</div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'active-jobs')" class="sidebar-link active"><i
+                        class="fas fa-briefcase"></i> Active Jobs</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'completed-jobs')" class="sidebar-link"><i
+                        class="fas fa-check-circle"></i> Completed</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(this, 'reviews-section')" class="sidebar-link"><i
+                        class="fas fa-comment-dots"></i> Reviews</a>
+            </li>
+            <li style="margin-top: 2rem;">
+                <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: var(--danger);"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <!-- Active Jobs Section -->
+        <div id="active-jobs" class="dashboard-section">
+            <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -1px;">Assigned
+                Appointments</h2>
+
+            <div class="grid-3" style="gap: 2rem; margin-bottom: 4rem;">
+                {% for job in jobs %}
+                <div class="glass-card animate-in" style="border-top: 6px solid var(--primary); padding: 2rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div>
+                            <span class="badge badge-{{ job.status.lower().replace(' ', '') }}"
+                                style="margin-bottom: 8px; display: inline-block;">{{ job.status }}</span>
+                            <h3 style="font-size: 1.4rem; font-weight: 800; margin: 0;">{{ job.service_name }}</h3>
+                        </div>
+                        <div
+                            style="width: 45px; height: 45px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div
+                                style="width: 32px; height: 32px; background: #eef2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--primary);">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div style="font-weight: 700; font-size: 0.95rem;">{{ job.customer_name }}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div
+                                style="width: 32px; height: 32px; background: #f0fdf4; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--secondary);">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div style="font-weight: 700; font-size: 0.95rem;">{{ job.customer_phone }}</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div
+                                style="width: 32px; height: 32px; background: #fffbeb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--accent);">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div style="font-weight: 700; font-size: 0.95rem;">{{ job.request_date }} at {{
+                                job.time_slot }}
+                            </div>
+                        </div>
+                        <div
+                            style="margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 0.85rem; border-left: 3px solid #e2e8f0;">
+                            <i class="fas fa-info-circle"></i> <strong>Location:</strong> {{ job.address }}, {{
+                            job.area_name }}
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px;">
+                        <form action="{{ url_for('update_status') }}" method="POST" style="flex: 2; display: flex;">
+                            <input type="hidden" name="request_id" value="{{ job.id }}">
+                            {% if job.status == 'Assigned' %}
+                            <button name="status" value="On the way" class="btn btn-primary"
+                                style="flex: 1; border-radius: 10px; padding: 14px;">
+                                <i class="fas fa-truck-moving"></i> Start Journey
+                            </button>
+                            {% elif job.status == 'On the way' %}
+                            <button name="status" value="In Progress" class="btn btn-primary"
+                                style="flex: 1; border-radius: 10px; background: var(--accent); border-color: var(--accent); padding: 14px;">
+                                <i class="fas fa-tools"></i> Arrived
+                            </button>
+                            {% elif job.status == 'In Progress' %}
+                            <button type="button" class="btn btn-primary"
+                                style="flex: 1; border-radius: 10px; background: var(--secondary); border-color: var(--secondary); padding: 14px;"
+                                onclick="openCompleteModal('{{ job.id }}')">
+                                <i class="fas fa-check-circle"></i> Complete Work
+                            </button>
+                            {% endif %}
+                        </form>
+
+                        {% if job.status == 'Assigned' %}
+                        <button class="btn btn-outline"
+                            style="flex: 1; border-radius: 10px; color: var(--danger); border-color: var(--danger);"
+                            onclick="openRejectModal('{{ job.id }}')">
+                            <i class="fas fa-times-circle"></i> Reject
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div
+                    style="grid-column: 1 / -1; padding: 80px; text-align: center; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
+                    <div style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"><i class="fas fa-mug-hot"></i>
+                    </div>
+                    <h3 style="color: #64748b; font-weight: 800;">No active jobs</h3>
+                    <p style="color: #94a3b8;">You're all caught up! Relax while we find new customers.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Completed Jobs Section -->
+        <div id="completed-jobs" class="dashboard-section" style="display: none;">
+            <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 2rem; letter-spacing: -1px;">Job History</h2>
+            <div class="table-wrapper animate-in">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Customer</th>
+                            <th>Base Fee</th>
+                            <th>Extras</th>
+                            <th>My Earnings</th>
+                            <th>Completed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in completed_jobs %}
+                        <tr>
+                            <td><strong>{{ job.service_name }}</strong></td>
+                            <td>{{ job.customer_name }}</td>
+                            <td>₹{{ job.service_fee }}</td>
+                            <td>₹{{ job.extra_charges }}</td>
+                            <td style="color: var(--secondary); font-weight: 800;">₹{{ job.worker_share }}</td>
+                            <td style="font-size: 0.85rem;">{{ job.completed_at.strftime('%b %d, %H:%M') if
+                                job.completed_at else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 60px; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-archive"
+                                    style="font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 1rem;"></i>
+                                No completed jobs yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div id="reviews-section" class="dashboard-section" style="display: none;">
+            <h2 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem;">Recent Performance Reviews</h2>
+            <div class="grid-3" style="gap: 1.5rem;">
+                {% for f in feedback %}
+                <div class="glass-card"
+                    style="padding: 1.5rem; border: none; background: white; box-shadow: var(--shadow);">
+                    <div style="display: flex; gap: 4px; color: #f59e0b; margin-bottom: 1rem; font-size: 0.8rem;">
+                        {% for i in range(f.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                    </div>
+                    <p
+                        style="font-size: 0.9rem; color: var(--text-main); font-style: italic; margin-bottom: 1.5rem; line-height: 1.5;">
+                        "{{ f.comment }}"</p>
+                    <div
+                        style="display: flex; align-items: center; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                        <div
+                            style="width: 32px; height: 32px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem;">
+                            {{ f.customer_name[0] }}</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.85rem;">{{ f.customer_name }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">{{ f.created_at.strftime('%b %d,
+                                %Y')
+                                }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <p style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">No reviews
+                    yet.
+                    Complete jobs to build your profile!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+<!-- Reject Task Modal -->
+<div id="rejectModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Reject Task</h3>
+            <button onclick="closeModal('rejectModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('reject_task') }}" method="POST">
+            <input type="hidden" name="request_id" id="rejectRequestId">
+            <div class="form-group">
+                <label>Reason for Rejection</label>
+                <select name="reason" class="form-control" required>
+                    <option value="Too far away">Too far away</option>
+                    <option value="Personal emergency">Personal emergency</option>
+                    <option value="Schedule conflict">Schedule conflict</option>
+                    <option value="Not my expertise">Not my expertise</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-danger"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">Confirm
+                Rejection</button>
+        </form>
+    </div>
+</div>
+
+<!-- Complete Task Modal -->
+<div id="completeModal" class="modal">
+    <div class="modal-content animate-in" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.5rem;">Job Completion</h3>
+            <button onclick="closeModal('completeModal')"
+                style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('update_status') }}" method="POST">
+            <input type="hidden" name="request_id" id="completeRequestId">
+            <input type="hidden" name="status" value="Completed">
+            <div class="form-group">
+                <label>Extra Charges (Parts, Material, etc.)</label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 15px; top: 14px; font-weight: 800;">₹</span>
+                    <input type="number" name="extra_charges" class="form-control" placeholder="0.00" step="0.01"
+                        style="padding-left: 35px;">
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Labor fee is automatically
+                    calculated base on service type.</p>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-size: 1.1rem; margin-top: 1rem;">Finish Job
+                & Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    function openRejectModal(reqId) {
+        document.getElementById('rejectRequestId').value = reqId;
+        showModal('rejectModal');
+    }
+
+    function openCompleteModal(reqId) {
+        document.getElementById('completeRequestId').value = reqId;
+        showModal('completeModal');
+    }
+
+    function showSection(element, sectionId) {
+        // Hide all sections
+        document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+
+        // Show selected section
+        const target = document.getElementById(sectionId);
+        if (target) {
+            target.style.display = 'block';
+        }
+
+        // Update active class on sidebar links
+        document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+        if (element && element.classList && element.classList.contains('sidebar-link')) {
+            element.classList.add('active');
+        } else if (element && element.closest) {
+            const link = element.closest('.sidebar-link');
+            if (link) link.classList.add('active');
+        }
+    }
+</script>
+{% endblock %}

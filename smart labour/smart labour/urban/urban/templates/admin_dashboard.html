@@ -1,0 +1,759 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <div style="margin-bottom: 2rem; padding: 0 12px; display: flex; align-items: center; gap: 16px;">
+            <div
+                style="width: 48px; height: 48px; background: #0f172a; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: var(--shadow-md);">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div>
+                <h4 style="font-weight: 800; font-size: 1rem; margin: 0; color: var(--text-main);">Main Control</h4>
+                <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; margin: 0;">System Admin</p>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'overview')" class="sidebar-link active"><i
+                        class="fas fa-columns"></i> Overview</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'pending-section')" class="sidebar-link"><i
+                        class="fas fa-clock"></i> Assignments</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'workers-registry')" class="sidebar-link"><i
+                        class="fas fa-users-gear"></i> Workers</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'quality-registry')" class="sidebar-link"><i
+                        class="fas fa-star"></i> Quality</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'complaints-registry')" class="sidebar-link"><i
+                        class="fas fa-exclamation-triangle"></i> Complaints</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'completed-section')" class="sidebar-link"><i
+                        class="fas fa-check-double"></i> Completed</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'strategy-section')" class="sidebar-link"><i
+                        class="fas fa-gears"></i> Strategy</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showSection(event, 'analytics-section')" class="sidebar-link"><i
+                        class="fas fa-chart-line"></i> Analytics</a>
+            </li>
+            <li class="sidebar-item" style="position: relative;">
+                <a href="javascript:void(0)" onclick="showModal('workerModal')" class="sidebar-link"
+                    style="font-size: 0.8rem; opacity: 0.7; padding-left: 50px;">+ Add New Pro</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showModal('cityModal')" class="sidebar-link"><i
+                        class="fas fa-map-location-dot"></i> Districts</a>
+            </li>
+            <li class="sidebar-item">
+                <a href="javascript:void(0)" onclick="showModal('serviceModal')" class="sidebar-link"><i
+                        class="fas fa-layer-group"></i> Catalog</a>
+            </li>
+            <li style="margin-top: 4rem;">
+                <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: var(--danger);"><i
+                        class="fas fa-power-off"></i> Logout</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <!-- Overview Section -->
+        <div id="overview" class="admin-section">
+            <div class="grid-3 animate-up delay-1" style="margin-bottom: 3rem; gap: 1.5rem;">
+                <!-- Stats Row -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #eff6ff; color: #1d4ed8;"><i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.75rem; font-weight: 900; line-height: 1;">{{ total_requests }}</h3>
+                        <p
+                            style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top: 4px;">
+                            Bookings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f0fdf4; color: #15803d;"><i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.75rem; font-weight: 900; line-height: 1;">{{ total_workers }}</h3>
+                        <p
+                            style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top: 4px;">
+                            Experts</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f0fdf4; color: #15803d;"><i class="fas fa-wallet"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.75rem; font-weight: 900; line-height: 1;">₹{{
+                            "%.2f"|format(total_revenue) }}</h3>
+                        <p
+                            style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top: 4px;">
+                            Revenue (20%)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card animate-up delay-2" style="padding: 100px; text-align: center;">
+                <i class="fas fa-shield-halved" style="font-size: 4rem; color: #e2e8f0; margin-bottom: 2rem;"></i>
+                <h2 style="font-weight: 900;">Admin Management Portal</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">Select a
+                    category from the sidebar to manage bookings, track experts, or adjust platform strategy.</p>
+            </div>
+        </div>
+
+        <!-- Pending Requests Section -->
+        <div id="pending-section" class="admin-section" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+                <div>
+                    <h2 style="font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px;">Pending Assignments</h2>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">Requests waiting for expert matching.</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper animate-in" style="margin-bottom: 4rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Service Requested</th>
+                            <th>Fulfillment Area</th>
+                            <th>Schedule</th>
+                            <th style="text-align: right;">Match Making</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in pending_requests %}
+                        <tr>
+                            <td><strong>{{ req.customer_name }}</strong></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div
+                                        style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--primary);">
+                                        <i class="fas fa-toolbox"></i>
+                                    </div>
+                                    <span>{{ req.service_name }}</span>
+                                </div>
+                            </td>
+                            <td><i class="fas fa-location-dot" style="color: #94a3b8; font-size: 0.8rem;"></i> {{
+                                req.city_name }}</td>
+                            <td>
+                                <div style="font-weight: 700;">{{ req.request_date }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Standard Slot</div>
+                            </td>
+                            <td style="text-align: right;">
+                                <button class="btn btn-primary"
+                                    style="padding: 8px 16px; font-size: 0.8rem; border-radius: 10px;"
+                                    onclick="openAssignModal('{{ req.id }}', '{{ req.service_id }}', '{{ req.city_id }}')">
+                                    Assign Pro
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: 60px; text-align: center; color: var(--text-muted);">
+                                <i class="fas fa-check-double"
+                                    style="font-size: 2rem; color: #cbd5e1; display: block; margin-bottom: 1rem;"></i>
+                                All requests have been successfully matched.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Workers Management Section -->
+        <div id="workers-registry" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">Service
+                Experts Registry</h2>
+            <div class="table-wrapper animate-in" style="margin-bottom: 4rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>District Node</th>
+                            <th>Expert Identity</th>
+                            <th>Specialization</th>
+                            <th>Verification</th>
+                            <th>Capacity Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set last_city = '' %}
+                        {% for w in workers %}
+                        {% if w.city_name != last_city %}
+                        <tr style="background: #f8fafc;">
+                            <td colspan="5" style="padding: 12px 24px;">
+                                <div
+                                    style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 800; font-size: 0.85rem; text-transform: uppercase;">
+                                    <i class="fas fa-map-pin"></i> {{ w.city_name }} Fulfillment Node
+                                </div>
+                            </td>
+                        </tr>
+                        {% set last_city = w.city_name %}
+                        {% endif %}
+                        <tr>
+                            <td style="color: #94a3b8; font-family: monospace; font-size: 0.8rem;">#NODE-{{
+                                w.city_name[:3]|upper }}</td>
+                            <td>
+                                <div style="font-weight: 800;">{{ w.full_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ w.email }}</div>
+                            </td>
+                            <td>
+                                <span
+                                    style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #475569;">{{
+                                    w.service_name }}</span>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('verify_worker', worker_id=w.id) }}" method="POST"
+                                    style="display:inline;">
+                                    <input type="hidden" name="status"
+                                        value="{{ 'false' if w.is_verified else 'true' }}">
+                                    <button type="submit"
+                                        class="btn {{ 'btn-success' if w.is_verified else 'btn-outline' }}"
+                                        style="padding: 4px 8px; font-size: 0.7rem; border-radius: 6px; background-color: {{ '#10b981' if w.is_verified else 'transparent' }}; color: {{ 'white' if w.is_verified else 'inherit' }}; border-color: {{ '#10b981' if w.is_verified else 'inherit' }};">
+                                        {{ 'Verified ✓' if w.is_verified else 'Pending Approval' }}
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ w.status.lower() }}">{{ w.status }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Quality Monitoring Section -->
+        <div id="quality-registry" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">Service
+                Quality Monitoring</h2>
+            <div class="table-wrapper animate-in" style="margin-bottom: 4rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Expert</th>
+                            <th>Service</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in all_feedback %}
+                        <tr>
+                            <td>{{ f.customer_name }}</td>
+                            <td><strong>{{ f.worker_name }}</strong></td>
+                            <td>{{ f.service_name }}</td>
+                            <td style="color: #f59e0b;">
+                                {% for i in range(f.rating) %}<i class="fas fa-star" style="font-size: 0.8rem;"></i>{%
+                                endfor %}
+                            </td>
+                            <td style="font-size: 0.85rem; max-width: 300px;">{{ f.comment }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="padding: 30px; text-align: center; color: var(--text-muted);">No
+                                feedback records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Complaints Section -->
+        <div id="complaints-registry" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">Customer
+                Complaints & Resolutions</h2>
+            <div class="table-wrapper animate-in" style="margin-bottom: 4rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>Customer</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in all_complaints %}
+                        <tr>
+                            <td>#{{ c.id }}</td>
+                            <td>{{ c.customer_name }}</td>
+                            <td><strong>{{ c.category }}</strong></td>
+                            <td>
+                                <span class="badge badge-{{ c.status.lower().replace(' ', '') }}">{{ c.status }}</span>
+                            </td>
+                            <td>{{ c.created_at.strftime('%d %b %Y') }}</td>
+                            <td style="text-align: right;">
+                                {% if c.status != 'Resolved' %}
+                                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.75rem;"
+                                    onclick="openResolveModal('{{ c.id }}', '{{ c.description }}')">
+                                    Resolve
+                                </button>
+                                {% else %}
+                                <span style="color: var(--secondary); font-size: 0.75rem; font-weight: 700;"><i
+                                        class="fas fa-check"></i> Done</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 30px; text-align: center; color: var(--text-muted);">No
+                                complaints needing attention.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Completed Section -->
+        <div id="completed-section" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">Completed
+                Service History</h2>
+            <div class="table-wrapper animate-in" style="margin-bottom: 4rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>Customer / Expert</th>
+                            <th>Service Fee</th>
+                            <th>Worker Share</th>
+                            <th>Platform Com.</th>
+                            <th>Done On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in all_completed %}
+                        <tr>
+                            <td style="font-family: monospace; font-size: 0.8rem; color: #94a3b8;">#SH-{{ job.id }}</td>
+                            <td>
+                                <div style="font-weight: 700;">{{ job.customer_name }}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">Pro: {{ job.worker_name }}
+                                    ({{ job.service_name }})</div>
+                            </td>
+                            <td>₹{{ job.total_amount }}</td>
+                            <td>₹{{ job.worker_share }}</td>
+                            <td style="color: var(--primary); font-weight: 800;">₹{{ job.admin_commission }}</td>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">
+                                {{ job.completed_at.strftime('%d %b %Y') if job.completed_at else 'Completed' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                                No records of completed services yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Strategy Section -->
+        <div id="strategy-section" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">
+                Strategy & Dynamic Pricing</h2>
+            <div class="glass-card animate-up delay-1" style="padding: 3rem; text-align: center; border-radius: 32px;">
+                <form action="{{ url_for('update_settings') }}" method="POST">
+                    <div class="grid-2"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 2rem;">
+                        <div class="form-group">
+                            <label
+                                style="font-weight: 800; color: var(--text-main); margin-bottom: 12px; display: block;">Fixed
+                                Platform Fee (₹)</label>
+                            <input type="number" name="platform_fee" step="0.01" class="form-control"
+                                value="{{ settings.platform_fee }}"
+                                style="height: 52px; font-size: 1.1rem; font-weight: 700;">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Applied to every
+                                booking as a convenience charge.</p>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="font-weight: 800; color: var(--text-main); margin-bottom: 12px; display: block;">Expert
+                                Commission (%)</label>
+                            <input type="number" name="commission_pct" step="1" class="form-control"
+                                value="{{ settings.commission_pct }}"
+                                style="height: 52px; font-size: 1.1rem; font-weight: 700;">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Percentage platform
+                                takes from the base service labor fee.</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"
+                        style="padding: 16px 32px; border-radius: 12px; font-weight: 800;">Apply Dynamic
+                        Pricing</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Analytics Section -->
+        <div id="analytics-section" class="admin-section" style="display: none;">
+            <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 1.5rem; letter-spacing: -0.5px;">
+                Platform Intelligence</h2>
+            <div class="grid-2 animate-up delay-1"
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 4rem;">
+                <div class="glass-card" style="padding: 2rem; display: flex; flex-direction: column;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h4 style="font-weight: 800; margin: 0;"><i class="fas fa-chart-pie"
+                                style="color: var(--primary);"></i> Revenue</h4>
+                        <select id="chartTypeSelector" class="form-control"
+                            style="width: auto; padding: 4px 12px; height: auto; font-size: 0.85rem;"
+                            onchange="updateChartType(this.value)">
+                            <option value="doughnut">Doughnut</option>
+                            <option value="pie">Pie Chart</option>
+                            <option value="bar">Bar Graph</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card" style="padding: 2rem;">
+                    <h4 style="font-weight: 800; margin-bottom: 1.5rem;"><i class="fas fa-fire"
+                            style="color: var(--danger);"></i> District Demand Heatmap</h4>
+                    <div id="heatmapContainer">
+                        {% for city in heatmap_data %}
+                        <div style="margin-bottom: 15px;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; font-weight: 700;">
+                                <span>{{ city.city_name }}</span>
+                                <span style="color: var(--primary);">{{ city.request_count }} Requests</span>
+                            </div>
+                            <div class="demand-bar" data-request-count="{{ city.request_count }}"
+                                data-total-requests="{{ total_requests }}"
+                                style="height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden;">
+                                <div class="demand-fill"
+                                    style="height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); width: 0%;">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+    </main>
+</div>
+
+<!-- Assign Modal -->
+<div id="assignModal" class="modal">
+    <div class="modal-content animate-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 800;">Assign Professional</h3>
+            <button onclick="closeModal('assignModal')"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('assign_worker') }}" method="POST">
+            <input type="hidden" name="request_id" id="assignRequestId">
+            <div class="form-group">
+                <label style="font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; display: block;">Select Available
+                    Worker</label>
+                <select name="worker_id" id="workerSelect" class="form-control" required
+                    style="border-radius: 12px; height: 50px;">
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary"
+                style="width: 100%; padding: 16px; border-radius: 12px; font-weight: 700;">Confirm Assignment</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Pro Modal -->
+<div id="workerModal" class="modal">
+    <div class="modal-content animate-up" style="max-width: 600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 800;">Register New Expert</h3>
+            <button onclick="closeModal('workerModal')"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('add_worker') }}" method="POST">
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" class="form-control" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control" required
+                        placeholder="expert@urbanservice.com">
+                </div>
+            </div>
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Set Password</label>
+                    <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="text" name="phone" class="form-control" required placeholder="+91 XXXX XXX XXX">
+                </div>
+            </div>
+            <div class="grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label>Specialization</label>
+                    <select name="service" class="form-control" required>
+                        <option value="">Select Skill</option>
+                        {% for s in services %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Base District</label>
+                    <select name="city" class="form-control" required>
+                        <option value="">Select City</option>
+                        {% for city in cities %}
+                        <option value="{{ city.id }}">{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 12px; padding: 16px;">Add
+                Professional to Registry</button>
+        </form>
+    </div>
+</div>
+
+<!-- District Modal -->
+<div id="cityModal" class="modal">
+    <div class="modal-content animate-up" style="max-width: 400px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 800;">Add New District</h3>
+            <button onclick="closeModal('cityModal')"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('add_city') }}" method="POST">
+            <div class="form-group">
+                <label>District Name</label>
+                <input type="text" name="name" class="form-control" required placeholder="e.g. Coimbatore">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 12px;">Expand
+                Coverage</button>
+        </form>
+    </div>
+</div>
+
+<!-- Catalog Modal -->
+<div id="serviceModal" class="modal">
+    <div class="modal-content animate-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 800;">Add Service Type</h3>
+            <button onclick="closeModal('serviceModal')"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <form action="{{ url_for('add_service') }}" method="POST">
+            <div class="form-group">
+                <label>Service Title</label>
+                <input type="text" name="name" class="form-control" required placeholder="e.g. Interior Designer">
+            </div>
+            <div class="form-group">
+                <label>Brief Description</label>
+                <textarea name="description" class="form-control" rows="2" required
+                    placeholder="What does this service include?"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Icon Identifier (FontAwesome)</label>
+                <input type="text" name="icon" class="form-control" required placeholder="e.g. house-chimney">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 12px;">Add to
+                Catalog</button>
+        </form>
+    </div>
+</div>
+
+<!-- Resolve Complaint Modal -->
+<div id="resolveModal" class="modal">
+    <div class="modal-content animate-up" style="max-width: 450px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 800;">Resolve Complaint</h3>
+            <button onclick="closeModal('resolveModal')"
+                style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div
+            style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; color: #475569;">
+            <strong>Issue:</strong> <span id="complaintDesc"></span>
+        </div>
+        <form action="{{ url_for('resolve_complaint') }}" method="POST">
+            <input type="hidden" name="complaint_id" id="resolveComplaintId">
+            <div class="form-group">
+                <label style="font-weight: 700; font-size: 0.9rem; margin-bottom: 8px; display: block;">Resolution
+                    Notes</label>
+                <textarea name="notes" class="form-control" rows="3" required
+                    placeholder="What was done to fix this?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px; border-radius: 12px;">Mark
+                as Resolved</button>
+        </form>
+    </div>
+</div>
+
+<script id="workers-json" type="application/json">{{ workers|tojson|safe }}</script>
+<script id="chart-data-json" type="application/json">{{ chart_data|tojson|safe }}</script>
+
+<script>
+    let workersData = [];
+    try {
+        const workersJson = document.getElementById('workers-json').textContent;
+        workersData = JSON.parse(workersJson);
+    } catch (e) {
+        console.error("Error parsing workers data:", e);
+    }
+
+    let chartData = [];
+    try {
+        const chartJson = document.getElementById('chart-data-json').textContent;
+        chartData = JSON.parse(chartJson);
+    } catch (e) {
+        console.error("Error parsing chart data:", e);
+    }
+
+    function showModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.style.display = 'flex';
+    }
+    function closeModal(id) {
+        const modal = document.getElementById(id);
+        if (modal) modal.style.display = 'none';
+    }
+
+    function openAssignModal(reqId, serviceId, cityId) {
+        document.getElementById('assignRequestId').value = reqId;
+        const select = document.getElementById('workerSelect');
+        select.innerHTML = '<option value="">Choose a Pro...</option>';
+
+        // Ensure we compare with same types
+        const filtered = workersData.filter(w =>
+            String(w.service_id) === String(serviceId) &&
+            String(w.city_id) === String(cityId) &&
+            w.status === 'Available'
+        );
+
+        if (filtered.length === 0) {
+            const opt = document.createElement('option');
+            opt.textContent = "No available experts in this district";
+            opt.disabled = true;
+            select.appendChild(opt);
+        } else {
+            filtered.forEach(w => {
+                const opt = document.createElement('option');
+                opt.value = w.id;
+                opt.textContent = `${w.full_name} (${w.rating_avg} ★)`;
+                select.appendChild(opt);
+            });
+        }
+        showModal('assignModal');
+    }
+
+    function openResolveModal(id, desc) {
+        document.getElementById('resolveComplaintId').value = id;
+        document.getElementById('complaintDesc').textContent = desc;
+        showModal('resolveModal');
+    }
+
+    function showSection(e, sectionId) {
+        // Update active class on links
+        document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+        // Handle trigger
+        if (e && e.currentTarget) {
+            e.currentTarget.classList.add('active');
+        } else if (e && e.target) {
+            const link = e.target.closest('.sidebar-link');
+            if (link) link.classList.add('active');
+        }
+
+        // Hide all sections
+        document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+
+        // Show selected section
+        const element = document.getElementById(sectionId);
+        if (element) {
+            element.style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+    }
+
+    // Analytics Initialization
+    // Analytics Initialization
+    let revenueChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initChart('doughnut');
+
+        // 2. Heatmap Bar Widths
+        document.querySelectorAll('.demand-bar').forEach(bar => {
+            const count = parseInt(bar.dataset.requestCount || 0);
+            const total = parseInt(bar.dataset.totalRequests || 0);
+            const fill = bar.querySelector('.demand-fill');
+            if (fill) {
+                const width = total > 0 ? (count / total * 100) : 0;
+                fill.style.width = width + '%';
+            }
+        });
+    });
+
+    function initChart(type) {
+        const chartCtx = document.getElementById('revenueChart');
+        if (!chartCtx || chartData.length === 0) return;
+
+        if (revenueChartInstance) {
+            revenueChartInstance.destroy();
+        }
+
+        const config = {
+            type: type,
+            data: {
+                labels: chartData.map(d => d.service_name),
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: chartData.map(d => d.revenue),
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6'],
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        display: type !== 'bar',
+                        labels: { usePointStyle: true, padding: 15, font: { weight: '700', size: 11 } }
+                    }
+                },
+                cutout: type === 'doughnut' ? '70%' : '0%',
+                scales: {
+                    x: { display: type === 'bar' },
+                    y: { display: type === 'bar', beginAtZero: true }
+                }
+            }
+        };
+
+        revenueChartInstance = new Chart(chartCtx.getContext('2d'), config);
+    }
+
+    function updateChartType(newType) {
+        initChart(newType);
+    }
+
+</script>
+{% endblock %}
